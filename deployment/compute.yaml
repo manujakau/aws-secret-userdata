@@ -21,7 +21,8 @@ Resources:
   SeEC2sshSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref VPCID
+      VpcId: Fn::ImportValue
+        !Sub ${EnvName}-vpc-id
       GroupDescription: Enable SSH access via port 22
       Tags:
         - Key: Name
@@ -49,7 +50,8 @@ Resources:
       ImageId: ami-09d3b3274b6c5d4aa
       InstanceType: t2.medium
       KeyName: !Ref EC2KeyPairName
-      SubnetId: !Ref VPCSubnetID
+      SubnetId: Fn::ImportValue
+        !Sub ${EnvName}-public-subnet
       SecurityGroupIds:
         - !Ref SeEC2sshSecurityGroup
       Tags:
