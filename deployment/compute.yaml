@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  EnvName:
+    Description: Environment name tag
+    Type: String
+    Default: secretdemo
+
+  EC2AccessCIDR:
+    Description: Allowed CIDR block for external tcp access to the EC2
+    Type: String
+    Default: 0.0.0.0/0
+
+  EC2KeyPairName: 
+    Description: Amazon EC2 Key Pair
+    Type: "AWS::EC2::KeyPair::KeyName"
+    ConstraintDescription: must be a valid Key Pair
+    Default: ""
+
+
+Resources:
+  SeEC2sshSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref VPCID
+      GroupDescription: Enable SSH access via port 22
+      Tags:
+        - Key: Name
+          Value: ${EnvName}-SecurityGroup
+  Ingress22:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref SeEC2sshSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: !Ref EC2AccessCIDR
+  Ingress5432:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref SeEC2sshSecurityGroup
+      IpProtocol: tcp
+      FromPort: '5432'
+      ToPort: '5432'
+      CidrIp: !Ref EC2AccessCIDR
+
+  SeEC2:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-09d3b3274b6c5d4aa
+      InstanceType: t2.medium
+      KeyName: !Ref EC2KeyPairName
+      SubnetId: !Ref VPCSubnetID
+      SecurityGroupIds:
+        - !Ref SeEC2sshSecurityGroup
+      Tags:
+        - Key: Name
+          Value: ${EnvName}-EC2
+
+
+Outputs:
+  SeEC2PublicIPAddress:
+    Description: EC2 public IP
+    Value: !GetAtt SeEC2.PublicIp
+  SeEC2SecurityGroup:
+    Description: EC2 SSH security group
+    Value: !Ref SeEC2sshSecurityGroup
