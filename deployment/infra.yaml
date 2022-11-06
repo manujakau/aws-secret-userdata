@@ -10,12 +10,147 @@ Parameters:
     Type: String
     Default: 10.1.0.0/16
 
-  PubSubCIDR1:
+  PublicSubnet1CIDR:
     Description: Public Subnet One
     Type: String
     Default: 10.1.10.0/24
 
-  PrivSubCIDR1:
+  PrivateSubnet1CIDR:
     Description: Private Subnet One
     Type: String
     Default: 10.1.20.0/24
+
+
+Resources:
+#VPC
+  SeVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: True
+      InstanceTenancy: "default"
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvName}-VPC
+
+#Subnets#
+#public#
+  SePublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      MapPublicIpOnLaunch: True
+      CidrBlock: !Ref PublicSubnet1CIDR
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvName}-Public-1
+      VpcId: !Ref SeVPC
+
+#Private#
+  SePrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvName}-Private-1
+      VpcId: !Ref SeVPC
+
+#End Of Subnets#
+
+  SeIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvName}-IGW
+
+  SeEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  SeNatGW:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - SeEIP
+          - AllocationId
+      SubnetId: !Ref SePublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvName}-NGW
+
+  SeVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref SeIGW
+      VpcId: !Ref SeVPC
+
+#Route Tables#
+#public#
+  SePublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref SeVPC
+      Tags:
+        - Key: Name
+          Value: AdvancedNetworks-Public-RTB
+
+  SePublicDefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref SeIGW
+      RouteTableId: !Ref SePublicRouteTable
+
+  PublicRouteSubnetAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref SePublicRouteTable
+      SubnetId: !Ref SePublicSubnet1
+
+#private#
+  SePrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref SeVPC
+      Tags:
+        - Key: Name
+          Value: AdvancedNetworks-Private-RTB
+
+  SePrivateDefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref SeNatGW
+      RouteTableId: !Ref SePrivateRouteTable
+
+  PrivateRouteSubnetAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref SePrivateRouteTable
+      SubnetId: !Ref SePrivateSubnet1
+#End OF Route Tables#
+
+Outputs:
+  SeVPCID:
+    Description: "VPC Id"
+    Value: !Ref SeVPC
+
+  SePublicSubnet1:
+    Description: Public Subnet1
+    Value: !Ref SePublicSubnet1
+
+  SePrivateSubnet1:
+    Description: Private Subnet1
+    Value: !Ref SePrivateSubnet1
