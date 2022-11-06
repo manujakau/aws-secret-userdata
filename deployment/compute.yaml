@@ -18,6 +18,38 @@ Parameters:
 
 
 Resources:
+  SeEC2Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+
+  SeEC2InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref SeEC2Role
+
+  SeEC2RolePolicies:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: SeEC2
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: '*'
+            Resource: '*'
+      Roles:
+        - !Ref SeEC2Role
+
   SeEC2sshSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -27,6 +59,7 @@ Resources:
       Tags:
         - Key: Name
           Value: ${EnvName}-SecurityGroup
+
   Ingress22:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
@@ -35,6 +68,7 @@ Resources:
       FromPort: '22'
       ToPort: '22'
       CidrIp: !Ref EC2AccessCIDR
+
   Ingress5432:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
@@ -59,8 +93,9 @@ Resources:
               postgresql-devel: []
               postgresql-contrib: []
               postgresql-docs: []
+              jq: []
     Properties: 
-      ImageId: ami-0c4e4b4eb2e11d1d4
+      ImageId: ami-09d3b3274b6c5d4aa
       InstanceType: t2.medium
       KeyName: !Ref EC2KeyPairName
       SubnetId: 
@@ -77,8 +112,14 @@ Resources:
 
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
             SeEC2 --region ${AWS::Region}
-            
+
+            PSQLROOTPASSWORD=$(aws secretsmanager get-secret-value --secret-id psqlrootpassword --region ${AWS::Region} | 
+            jq --raw-output '.SecretString' | jq -r .password)
+
+            echo "$PSQLROOTPASSWORD" > /tmp/PSQLROOTPASSWORD.txt
+
           - {}
+      IamInstanceProfile: !Ref SeEC2InstanceProfile
       Tags:
         - Key: Name
           Value: !Sub ${EnvName}-EC2
