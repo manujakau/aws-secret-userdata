@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  EnvName:
+    Description: Environment name tag
+    Type: String
+    Default: secretdemo
+
+  VpcCIDR:
+    Description: Main VPC CIDR
+    Type: String
+    Default: 10.1.0.0/16
+
+  PubSubCIDR1:
+    Description: Public Subnet One
+    Type: String
+    Default: 10.1.10.0/24
+
+  PrivSubCIDR1:
+    Description: Private Subnet One
+    Type: String
+    Default: 10.1.20.0/24
