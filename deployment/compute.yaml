@@ -113,10 +113,21 @@ Resources:
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
             SeEC2 --region ${AWS::Region}
 
-            PSQLROOTPASSWORD=$(aws secretsmanager get-secret-value --secret-id psqlrootpassword --region ${AWS::Region} | 
+            sudo postgresql-setup initdb
+
+            sudo systemctl restart postgresql.service
+
+            sudo systemctl enable postgresql.service
+
+            PSQLROOTPASSWORD=$(aws secretsmanager get-secret-value --secret-id psqlrootpassword02 --region ${AWS::Region} | 
             jq --raw-output '.SecretString' | jq -r .password)
 
-            echo "$PSQLROOTPASSWORD" > /tmp/PSQLROOTPASSWORD.txt
+            sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$PSQLROOTPASSWORD';"
+
+            sudo sed -i 's/local   all             all                                     peer/
+            local   all             all                                     md5/g' /var/lib/pgsql/data/pg_hba.conf
+
+            sudo systemctl restart postgresql.service
 
           - {}
       IamInstanceProfile: !Ref SeEC2InstanceProfile
