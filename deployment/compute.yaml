@@ -46,6 +46,61 @@ Resources:
 
   SeEC2:
     Type: AWS::EC2::Instance
+    Metadata:
+          'AWS::CloudFormation::Init':
+            configSets:
+              psql_install:
+                - install_cfn
+                - install_psql
+            install_cfn:
+              files:
+                /etc/cfn/cfn-hup.conf:
+                  content: !Join 
+                    - ''
+                    - - |
+                        [main]
+                      - stack=
+                      - !Ref 'AWS::StackId'
+                      - |+
+                      - region=
+                      - !Ref 'AWS::Region'
+                      - |+
+                  mode: '000400'
+                  owner: root
+                  group: root
+                /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+                  content: !Join 
+                    - ''
+                    - - |
+                        [cfn-auto-reloader-hook]
+                      - |
+                        triggers=post.update
+                      - >
+                        path=Resources.SeEC2.Metadata.AWS::CloudFormation::Init
+                      - 'action=/opt/aws/bin/cfn-init -v '
+                      - '         --stack '
+                      - !Ref 'AWS::StackName'
+                      - '         --resource SeEC2 '
+                      - '         --configsets psql_install '
+                      - '         --region '
+                      - !Ref 'AWS::Region'
+                      - |+
+                  mode: '000400'
+                  owner: root
+                  group: root
+              services:
+                sysvinit:
+                  cfn-hup:
+                    enabled: 'true'
+                    ensureRunning: 'true'
+                    files:
+                      - /etc/cfn/cfn-hup.conf
+                      - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+            install_psql:
+              packages:
+                yum:
+                  postgresql: []
+                  postgresql-server: []
     Properties: 
       ImageId: ami-09d3b3274b6c5d4aa
       InstanceType: t2.medium
@@ -54,6 +109,28 @@ Resources:
         Fn::ImportValue: !Sub '${EnvName}-public-subnet'
       SecurityGroupIds:
         - !Ref SeEC2sshSecurityGroup
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              yum update -y aws-cfn-bootstrap
+            - '/opt/aws/bin/cfn-init -v '
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - '         --resource SeEC2 '
+            - '         --configsets psql_install '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - |+
+            - '/opt/aws/bin/cfn-signal -e $? '
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - '         --resource SeEC2 '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - |+
       Tags:
         - Key: Name
           Value: ${EnvName}-EC2
