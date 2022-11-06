@@ -104,7 +104,7 @@ Resources:
       VpcId: !Ref SeVPC
       Tags:
         - Key: Name
-          Value: AdvancedNetworks-Public-RTB
+          Value: !Sub ${EnvName}-Public-RTB
 
   SePublicDefaultRoute:
     Type: AWS::EC2::Route
@@ -126,7 +126,7 @@ Resources:
       VpcId: !Ref SeVPC
       Tags:
         - Key: Name
-          Value: AdvancedNetworks-Private-RTB
+          Value: !Sub ${EnvName}-Private-RTB
 
   SePrivateDefaultRoute:
     Type: AWS::EC2::Route
