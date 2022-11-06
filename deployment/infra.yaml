@@ -146,11 +146,17 @@ Outputs:
   SeVPCID:
     Description: "VPC Id"
     Value: !Ref SeVPC
+    Export:
+      Name: !Sub ${EnvName}-vpc-id
 
   SePublicSubnet1:
     Description: Public Subnet1
     Value: !Ref SePublicSubnet1
+    Export:
+      Name: !Sub ${EnvName}-public-subnet
 
   SePrivateSubnet1:
     Description: Private Subnet1
     Value: !Ref SePrivateSubnet1
+    Export:
+      Name: !Sub ${EnvName}-private-subnet
