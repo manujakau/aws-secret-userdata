@@ -133,7 +133,7 @@ Resources:
             - |+
       Tags:
         - Key: Name
-          Value: ${EnvName}-EC2
+          Value: !Sub ${EnvName}-EC2
 
 
 Outputs:
