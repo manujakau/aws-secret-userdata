@@ -120,7 +120,7 @@ Resources:
             sudo systemctl enable postgresql.service
 
             PSQLROOTPASSWORD=$(aws secretsmanager get-secret-value --secret-id psqlrootpassword02 --region ${AWS::Region} | 
-            jq --raw-output '.SecretString' | jq -r .password)
+            jq --raw-output '.SecretString')
 
             sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$PSQLROOTPASSWORD';"
 
