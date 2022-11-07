@@ -14,7 +14,7 @@ Parameters:
     Description: Amazon EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
     ConstraintDescription: must be a valid Key Pair
-    Default: "eks-key"
+    Default: ""
 
 
 Resources:
