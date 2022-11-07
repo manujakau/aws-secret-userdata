@@ -144,6 +144,8 @@ Outputs:
   SeEC2PublicIPAddress:
     Description: EC2 public IP
     Value: !GetAtt SeEC2.PublicIp
-  SeEC2SecurityGroup:
-    Description: EC2 SSH security group
+  SeSecurityGroup:
+    Description: EC2 security Group ID
     Value: !Ref SeEC2sshSecurityGroup
+    Export:
+      Name: !Sub ${EnvName}-security-group
