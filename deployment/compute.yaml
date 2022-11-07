@@ -127,6 +127,10 @@ Resources:
             sudo sed -i 's/local   all             all                                     peer/
             local   all             all                                     md5/g' /var/lib/pgsql/data/pg_hba.conf
 
+            sudo sh -c "echo 'host    all             all             0.0.0.0/0               md5' >> /var/lib/pgsql/data/pg_hba.conf"
+
+            sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/pgsql/data/postgresql.conf
+
             sudo systemctl restart postgresql.service
 
           - {}
