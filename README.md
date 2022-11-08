@@ -7,7 +7,7 @@ Use aws secret manager to store sensitive user-data inputs.
 
 - Clone the Repository
 - Update the key-pair name parameter in compute.yaml
-- Use "deploy" commandline to deploy each stack.
+- Use "deploy" command-line tool to deploy each stack.
 - Start stack deployment with infra, then secrets and finally compute.
 
 ```
