@@ -9,6 +9,7 @@ Below deployment will create the demo environment that able to fetch secrets fro
 
 - Clone the Repository
 - Update the key-pair name parameter in compute.yaml
+- Default region is set to use as us-east-1. Therefor change the ami-id if deploy on other regions
 - Use "deploy" command-line tool to deploy each stack.
 - Start stack deployment with infra, then secrets and finally compute.
 
