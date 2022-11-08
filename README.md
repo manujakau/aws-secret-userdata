@@ -1,6 +1,8 @@
 ## aws-secret-userdata
 Use aws secret manager to store sensitive user-data inputs.
 
+![aws-secret-manager](https://user-images.githubusercontent.com/44127516/200485319-6d3d3cd3-b2d1-4505-9149-607d469786a8.jpg)
+
 ### Cloudformation deployment
 
 - Clone the Repository
