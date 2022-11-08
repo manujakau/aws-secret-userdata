@@ -9,7 +9,7 @@ Use aws secret manager to store sensitive user-data inputs.
 - Start stack deployment with infra, then secrets and finally compute.
 
 ```
-./deploy [preferred-stack-name-here] [stack-to-deploy(env/infra)] [stack-action(create/update)]
+./deploy [preferred-stack-name-here] [stack-to-deploy(infra/secrets/compute)] [stack-action(create/update)]
 
 ex: ./deploy report-env infra create
     ./deploy report-infra secrets create
